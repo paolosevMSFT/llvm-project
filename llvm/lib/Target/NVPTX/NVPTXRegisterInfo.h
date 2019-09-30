@@ -44,6 +44,13 @@ public:
 
   Register getFrameRegister(const MachineFunction &MF) const override;
 
+  FrameBaseLocation
+  getFrameBaseLocation(const MachineFunction &MF) const override {
+    FrameBaseLocation Loc;
+    Loc.Kind = FrameBaseLocation::CFA;
+    return Loc;
+  }
+
   ManagedStringPool *getStrPool() const {
     return const_cast<ManagedStringPool *>(&ManagedStrPool);
   }
@@ -53,7 +60,6 @@ public:
     O << "reg" << RegNo;
     return getStrPool()->getManagedString(O.str().c_str())->c_str();
   }
-
 };
 
 std::string getNVPTXRegClassName(const TargetRegisterClass *RC);
