@@ -183,6 +183,8 @@ public:
     eCore_uknownMach32,
     eCore_uknownMach64,
 
+    eCore_wasm32,
+
     kNumCores,
 
     kCore_invalid,
