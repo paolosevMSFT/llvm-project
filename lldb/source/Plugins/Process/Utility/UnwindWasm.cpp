@@ -18,6 +18,10 @@ using namespace process_gdb_remote;
 
 lldb::RegisterContextSP
 UnwindWasm::DoCreateRegisterContextForFrame(lldb_private::StackFrame *frame) {
+  if (m_frames.size() <= frame->GetFrameIndex()) {
+    return lldb::RegisterContextSP();
+  }
+
   ProcessGDBRemote *gdb_process =
       static_cast<ProcessGDBRemote *>(frame->CalculateProcess().get());
   ThreadGDBRemote *gdb_thread =
