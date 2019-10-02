@@ -281,7 +281,8 @@ public:
 
   // WebAssembly-specific commands
   bool GetWasmGlobal(uint32_t module_id, int index, uint64_t &value);
-  bool GetWasmLocal(uint32_t module_id, int index, uint64_t &value);
+  bool GetWasmLocal(uint32_t module_id, int frame_index, int index,
+                    uint64_t &value);
   bool GetWasmStackValue(uint32_t module_id, int index, uint64_t &value);
   bool WasmReadMemory(uint32_t module_id, lldb::addr_t vm_addr, void *buf,
                       size_t size);

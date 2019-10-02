@@ -2684,11 +2684,11 @@ bool GDBRemoteCommunicationClient::GetWasmGlobal(uint32_t module_id, int index,
   return false;
 }
 
-bool GDBRemoteCommunicationClient::GetWasmLocal(uint32_t module_id, int index,
-                                                uint64_t &value) {
+bool GDBRemoteCommunicationClient::GetWasmLocal(uint32_t module_id, int frame_index,
+                                                int index, uint64_t &value) {
   StreamString packet;
   packet.Printf("qWasmLocal:");
-  packet.Printf("%d;%d", module_id, index);
+  packet.Printf("%d;%d;%d", module_id, frame_index, index);
   StringExtractorGDBRemote response;
   if (SendPacketAndWaitForResponse(packet.GetString(), response, false) !=
       PacketResult::Success) {

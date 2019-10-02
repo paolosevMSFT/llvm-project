@@ -2604,12 +2604,13 @@ bool DWARFExpression::Evaluate(
 
     case DW_OP_WASM_location: {
       if (isWasm) {
+        int frame_index = frame->GetConcreteFrameIndex();
         uint64_t wasm_op = opcodes.GetULEB128(&offset);
         uint64_t index = opcodes.GetULEB128(&offset);
         uint64_t value = 0;
         switch (wasm_op) {
         case 0: // Local
-          if (!gdb_comm->GetWasmLocal(wasmModuleId, index, value)) {
+          if (!gdb_comm->GetWasmLocal(wasmModuleId, frame_index, index, value)) {
             return false;
           }
           break;
