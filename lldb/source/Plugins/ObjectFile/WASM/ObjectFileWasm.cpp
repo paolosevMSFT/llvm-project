@@ -136,7 +136,7 @@ bool ObjectFileWASM::DecodeNextSection(lldb::offset_t *offset_ptr) {
           offset += section_length;
         }
       }
-    } else if (section_id < 11) {
+    } else if (section_id <= 11) {
       m_sect_infos.push_back(
           section_info{*offset_ptr + offset, payload_len, section_id, ""});
       offset += payload_len;
