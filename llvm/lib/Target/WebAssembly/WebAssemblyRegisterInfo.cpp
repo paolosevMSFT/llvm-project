@@ -145,7 +145,7 @@ WebAssemblyRegisterInfo::getFrameBaseLocation(const MachineFunction &MF) const {
   const WebAssemblyFunctionInfo &MFI = *MF.getInfo<WebAssemblyFunctionInfo>();
   FrameBaseLocation Loc;
   Loc.Kind = FrameBaseLocation::TargetIndex;
-  signed Local = MFI.SPVReg != WebAssembly::NoRegister ? MFI.SPLocal : -1;
+  signed Local = MFI.SPInstr != nullptr ? MFI.SPLocal : -1;
   Loc.TI = {0, Local};
   return Loc;
 }

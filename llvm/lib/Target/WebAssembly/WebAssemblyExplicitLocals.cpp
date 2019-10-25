@@ -385,11 +385,15 @@ bool WebAssemblyExplicitLocals::runOnMachineFunction(MachineFunction &MF) {
     Changed = true;
   }
 
-  {
-    auto RL = Reg2Local.find(MFI.SPVReg);
-    if (RL != Reg2Local.end()) {
-      MFI.SPLocal = RL->second;
-    }
+  // Recording in which local we store SP. Usually global.set precede with TEE
+  // or GET.
+  if (MachineInstr *GI = MFI.SPInstr) {
+    auto TI = std::prev(GI->getIterator());
+    if (TI->getOpcode() == WebAssembly::LOCAL_TEE_I32 ||
+        TI->getOpcode() == WebAssembly::LOCAL_TEE_I64 ||
+        TI->getOpcode() == WebAssembly::LOCAL_GET_I32 ||
+        TI->getOpcode() == WebAssembly::LOCAL_GET_I64)
+      MFI.SPLocal = TI->getOperand(1).getImm();
   }
 
 #ifndef NDEBUG
