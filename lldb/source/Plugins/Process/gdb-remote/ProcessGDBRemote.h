@@ -35,6 +35,7 @@
 #include "GDBRemoteCommunicationClient.h"
 #include "GDBRemoteCommunicationReplayServer.h"
 #include "GDBRemoteRegisterContext.h"
+#include "GDBRemoteWasmWrapper.h"
 
 #include "llvm/ADT/DenseMap.h"
 
@@ -231,6 +232,11 @@ public:
   std::string HarmonizeThreadIdsForProfileData(
       StringExtractorGDBRemote &inputStringExtractor);
 
+  bool CanDebugWasm() override { return true; }
+  WasmWrapper *GetWasmWrapper() override {
+    return new GDBRemoteWasmWrapper(&GetGDBRemote());
+  };
+
 protected:
   friend class ThreadGDBRemote;
   friend class GDBRemoteCommunicationClient;
@@ -386,7 +392,7 @@ protected:
   DynamicLoader *GetDynamicLoader() override;
 
   bool GetGDBServerRegisterInfoXMLAndProcess(ArchSpec &arch_to_use,
-                                             std::string xml_filename, 
+                                             std::string xml_filename,
                                              uint32_t &cur_reg_num,
                                              uint32_t &reg_offset);
 

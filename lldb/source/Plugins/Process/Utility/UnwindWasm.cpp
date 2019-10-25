@@ -7,7 +7,6 @@
 //===----------------------------------------------------------------------===//
 
 #include "UnwindWasm.h"
-#include "Plugins/Process/gdb-remote/GDBRemoteCommunicationClient.h"
 #include "Plugins/Process/gdb-remote/GDBRemoteRegisterContext.h"
 #include "Plugins/Process/gdb-remote/ProcessGDBRemote.h"
 #include "Plugins/Process/gdb-remote/ThreadGDBRemote.h"
@@ -39,13 +38,11 @@ uint32_t UnwindWasm::DoGetFrameCount() {
     m_unwind_complete = true;
     m_frames.clear();
 
-    process_gdb_remote::ProcessGDBRemote *process =
-        (process_gdb_remote::ProcessGDBRemote *)GetThread().GetProcess().get();
+    Process *process = GetThread().GetProcess().get();
     if (process) {
-      process_gdb_remote::GDBRemoteCommunicationClient *gdb_comm =
-          &process->GetGDBRemote();
-      if (gdb_comm) {
-        if (!gdb_comm->GetWasmCallStack(m_frames)) {
+      WasmWrapper *wasm_wrapper = process->GetWasmWrapper();
+      if (wasm_wrapper) {
+        if (!wasm_wrapper->GetWasmCallStack(m_frames)) {
           m_frames.clear();
         }
       }
