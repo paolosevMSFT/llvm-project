@@ -47,6 +47,7 @@
 #include "lldb/Utility/StructuredData.h"
 #include "lldb/Utility/TraceOptions.h"
 #include "lldb/Utility/UserIDResolver.h"
+#include "lldb/Utility/WasmWrapper.h"
 #include "lldb/lldb-private.h"
 
 #include "llvm/ADT/ArrayRef.h"
@@ -555,6 +556,10 @@ public:
   uint32_t GetAddressByteSize() const;
 
   uint32_t GetUniqueID() const { return m_process_unique_id; }
+
+  /// WASM specific
+  virtual bool CanDebugWasm() { return false; }
+  virtual WasmWrapper *GetWasmWrapper () { return nullptr; }
 
   /// Check if a plug-in instance can debug the file in \a module.
   ///
@@ -2748,7 +2753,7 @@ protected:
   StructuredDataPluginMap m_structured_data_plugin_map;
 
   enum { eCanJITDontKnow = 0, eCanJITYes, eCanJITNo } m_can_jit;
-  
+
   std::unique_ptr<UtilityFunction> m_dlopen_utility_func_up;
   llvm::once_flag m_dlopen_utility_func_flag_once;
 

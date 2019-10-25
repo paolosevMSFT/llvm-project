@@ -21,6 +21,7 @@
 #include "lldb/Utility/Scalar.h"
 #include "lldb/Utility/StreamString.h"
 #include "lldb/Utility/VMRange.h"
+#include "lldb/Utility/WasmWrapper.h"
 
 #include "lldb/Host/Host.h"
 #include "lldb/Utility/Endian.h"
@@ -36,8 +37,6 @@
 #include "lldb/Target/Target.h"
 #include "lldb/Target/Thread.h"
 
-#include "Plugins/Process/gdb-remote/GDBRemoteCommunicationClient.h"
-#include "Plugins/Process/gdb-remote/ProcessGDBRemote.h"
 #include "Plugins/SymbolFile/DWARF/DWARFUnit.h"
 
 using namespace lldb;
@@ -1028,9 +1027,7 @@ bool DWARFExpression::Evaluate(
   const llvm::Triple::ArchType machine =
       frame->CalculateTarget()->GetArchitecture().GetMachine();
   bool isWasm = (machine == llvm::Triple::wasm32); // wasm64 not supported yet.
-  process_gdb_remote::GDBRemoteCommunicationClient *gdb_comm = isWasm
-      ? &((process_gdb_remote::ProcessGDBRemote *)process)->GetGDBRemote()
-	  : nullptr;
+  WasmWrapper *wasm_wrapper = isWasm ? process->GetWasmWrapper() : nullptr;
 
   uint32_t wasmModuleId = isWasm && reg_ctx ? reg_ctx->GetPC() >> 32 : 0;
 
@@ -1705,7 +1702,7 @@ bool DWARFExpression::Evaluate(
 
         if (byte_size <= 4096) {
           uint8_t buffer[4096];
-          if (!gdb_comm->WasmReadMemory(wasmModuleId,
+          if (!wasm_wrapper->WasmReadMemory(wasmModuleId,
                                         value.ULongLong() + uconst_value,
                                         buffer, byte_size)) {
             return false;
@@ -2610,17 +2607,17 @@ bool DWARFExpression::Evaluate(
         uint64_t value = 0;
         switch (wasm_op) {
         case 0: // Local
-          if (!gdb_comm->GetWasmLocal(wasmModuleId, frame_index, index, value)) {
+          if (!wasm_wrapper->GetWasmLocal(wasmModuleId, frame_index, index, value)) {
             return false;
           }
           break;
         case 1: // Global
-          if (!gdb_comm->GetWasmGlobal(wasmModuleId, index, value)) {
+          if (!wasm_wrapper->GetWasmGlobal(wasmModuleId, index, value)) {
             return false;
           }
           break;
         case 2: // Operand Stack
-          if (!gdb_comm->GetWasmStackValue(wasmModuleId, index, value)) {
+          if (!wasm_wrapper->GetWasmStackValue(wasmModuleId, index, value)) {
             return false;
           }
           break;
