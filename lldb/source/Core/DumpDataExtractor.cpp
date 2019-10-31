@@ -425,7 +425,7 @@ lldb::offset_t lldb_private::DumpDataExtractor(
         s->PutChar('\"');
 
         while (const char c = *cstr) {
-          if (isprint(c)) {
+          if (c >= 0 && isprint(c)) { // TODO(paolosev) 0xfe causes crash in isprint()
             s->PutChar(c);
           } else {
             switch (c) {

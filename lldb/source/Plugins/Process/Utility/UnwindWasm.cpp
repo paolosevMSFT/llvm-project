@@ -58,7 +58,6 @@ bool UnwindWasm::DoGetFrameInfoAtIndex(uint32_t frame_idx, lldb::addr_t &cfa,
                                        lldb::addr_t &pc,
                                        bool &behaves_like_zeroth_frame) {
   cfa = 0;
-  behaves_like_zeroth_frame = false;
 
   if (m_frames.size() == 0) {
     DoGetFrameCount();

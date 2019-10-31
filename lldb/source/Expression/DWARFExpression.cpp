@@ -1032,7 +1032,7 @@ bool DWARFExpression::Evaluate(
       ? &((process_gdb_remote::ProcessGDBRemote *)process)->GetGDBRemote()
 	  : nullptr;
 
-  uint32_t wasmModuleId = isWasm && reg_ctx ? reg_ctx->GetPC() >> 32 : 0;
+  uint32_t wasm_module_id = isWasm && reg_ctx ? reg_ctx->GetPC() >> 32 : 0;
 
   if (initial_value_ptr)
     stack.push_back(*initial_value_ptr);
@@ -1705,7 +1705,7 @@ bool DWARFExpression::Evaluate(
 
         if (byte_size <= 4096) {
           uint8_t buffer[4096];
-          if (!gdb_comm->WasmReadMemory(wasmModuleId,
+          if (!gdb_comm->WasmReadMemory(wasm_module_id,
                                         value.ULongLong() + uconst_value,
                                         buffer, byte_size)) {
             return false;
@@ -2610,17 +2610,17 @@ bool DWARFExpression::Evaluate(
         uint64_t value = 0;
         switch (wasm_op) {
         case 0: // Local
-          if (!gdb_comm->GetWasmLocal(wasmModuleId, frame_index, index, value)) {
+          if (!gdb_comm->GetWasmLocal(wasm_module_id, frame_index, index, value)) {
             return false;
           }
           break;
         case 1: // Global
-          if (!gdb_comm->GetWasmGlobal(wasmModuleId, index, value)) {
+          if (!gdb_comm->GetWasmGlobal(wasm_module_id, index, value)) {
             return false;
           }
           break;
         case 2: // Operand Stack
-          if (!gdb_comm->GetWasmStackValue(wasmModuleId, index, value)) {
+          if (!gdb_comm->GetWasmStackValue(wasm_module_id, index, value)) {
             return false;
           }
           break;
