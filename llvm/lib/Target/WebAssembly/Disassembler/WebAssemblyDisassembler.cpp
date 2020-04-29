@@ -230,11 +230,13 @@ MCDisassembler::DecodeStatus WebAssemblyDisassembler::getInstruction(
       } else {
         // We don't have access to the signature, so create a symbol without one
         MCSymbol *Sym = getContext().createTempSymbol("typeindex", true);
-        auto *WasmSym = cast<MCSymbolWasm>(Sym);
-        WasmSym->setType(wasm::WASM_SYMBOL_TYPE_FUNCTION);
-        const MCExpr *Expr = MCSymbolRefExpr::create(
-            WasmSym, MCSymbolRefExpr::VK_WASM_TYPEINDEX, getContext());
-        MI.addOperand(MCOperand::createExpr(Expr));
+        auto *WasmSym = dyn_cast<MCSymbolWasm>(Sym);
+        if (WasmSym) {
+          WasmSym->setType(wasm::WASM_SYMBOL_TYPE_FUNCTION);
+          const MCExpr *Expr = MCSymbolRefExpr::create(
+              WasmSym, MCSymbolRefExpr::VK_WASM_TYPEINDEX, getContext());
+          MI.addOperand(MCOperand::createExpr(Expr));
+        }
       }
       break;
     }

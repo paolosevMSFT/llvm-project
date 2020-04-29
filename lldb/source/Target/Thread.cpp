@@ -7,6 +7,7 @@
 //===----------------------------------------------------------------------===//
 
 #include "lldb/Target/Thread.h"
+#include "Plugins/Process/wasm/UnwindWasm.h"
 #include "lldb/Breakpoint/BreakpointLocation.h"
 #include "lldb/Core/Debugger.h"
 #include "lldb/Core/FormatEntity.h"
@@ -1853,8 +1854,13 @@ size_t Thread::GetStackFrameStatus(Stream &strm, uint32_t first_frame,
 }
 
 Unwind &Thread::GetUnwinder() {
-  if (!m_unwinder_up)
-    m_unwinder_up.reset(new UnwindLLDB(*this));
+  if (!m_unwinder_up) {
+    if (CalculateTarget()->GetArchitecture().GetMachine() ==
+        llvm::Triple::wasm32)
+      m_unwinder_up.reset(new wasm::UnwindWasm(*this));
+    else
+      m_unwinder_up.reset(new UnwindLLDB(*this));
+  }
   return *m_unwinder_up;
 }
 

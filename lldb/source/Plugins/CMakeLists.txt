@@ -30,6 +30,7 @@ set(LLDB_ENUM_PLUGINS "")
 # FIXME: ProcessWindowsCommon needs to be initialized after all other process
 # plugins but before ProcessGDBRemote.
 set(LLDB_PROCESS_WINDOWS_PLUGIN "")
+set(LLDB_PROCESS_WASM_PLUGIN "")
 set(LLDB_PROCESS_GDB_PLUGIN "")
 
 foreach(p ${LLDB_ALL_PLUGINS})
@@ -41,6 +42,8 @@ foreach(p ${LLDB_ALL_PLUGINS})
     set(LLDB_PROCESS_WINDOWS_PLUGIN "LLDB_PLUGIN(${pStripped})\n")
   elseif(${pStripped} STREQUAL "ProcessGDBRemote")
     set(LLDB_PROCESS_GDB_PLUGIN "LLDB_PLUGIN(${pStripped})\n")
+  elseif(${pStripped} STREQUAL "ProcessWasm")
+    set(LLDB_PROCESS_WASM_PLUGIN "LLDB_PLUGIN(WasmProcessGDBRemote)\n")
   else()
     set(LLDB_ENUM_PLUGINS "${LLDB_ENUM_PLUGINS}LLDB_PLUGIN(${pStripped})\n")
   endif()

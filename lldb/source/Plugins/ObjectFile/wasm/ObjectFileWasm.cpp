@@ -411,9 +411,14 @@ llvm::Optional<FileSpec> ObjectFileWasm::GetExternalDebugInfoFileSpec() {
           ReadImageData(sect_info.offset, kBufferSize);
       llvm::DataExtractor data = section_header_data.GetAsLLVM();
       llvm::DataExtractor::Cursor c(0);
-      llvm::Optional<ConstString> symbols_url = GetWasmString(data, c);
-      if (symbols_url)
-        return FileSpec(symbols_url->GetStringRef());
+
+      llvm::SmallVector<uint8_t, 32> str_storage;
+      data.getU8(c, str_storage, sect_info.size);
+      if (!c) {
+        consumeError(c.takeError());
+        return llvm::None;
+      }
+      return FileSpec(toStringRef(makeArrayRef(str_storage)));
     }
   }
   return llvm::None;

@@ -36,6 +36,7 @@
 #include "lldb/Target/Target.h"
 #include "lldb/Target/Thread.h"
 
+#include "Plugins/Process/wasm/ProcessWasm.h"
 #include "Plugins/SymbolFile/DWARF/DWARFUnit.h"
 
 using namespace lldb;
@@ -2481,6 +2482,66 @@ bool DWARFExpression::Evaluate(
 
       stack.back().GetScalar() = tls_load_addr;
       stack.back().SetValueType(Value::eValueTypeLoadAddress);
+    } break;
+
+    case DW_OP_WASM_location: {
+      if (frame) {
+        const llvm::Triple::ArchType machine =
+            frame->CalculateTarget()->GetArchitecture().GetMachine();
+        if (machine == llvm::Triple::wasm32) {
+          wasm::IWasmProcess *wasm_process =
+              static_cast<wasm::WasmProcessGDBRemote *>(
+                  frame->CalculateProcess().get());
+          int frame_index = frame->GetConcreteFrameIndex();
+          uint64_t wasm_op = opcodes.GetULEB128(&offset);
+          uint64_t index = opcodes.GetULEB128(&offset);
+          uint8_t buf[16];
+          size_t size = 0;
+          switch (wasm_op) {
+          case 0: // Local
+            if (!wasm_process->GetWasmLocal(frame_index, index, buf, 16,
+                                            size)) {
+              return false;
+            }
+            break;
+          case 1: // Global
+            if (!wasm_process->GetWasmGlobal(frame_index, index, buf, 16,
+                                             size)) {
+              return false;
+            }
+            break;
+          case 2: // Operand Stack
+            if (!wasm_process->GetWasmStackValue(frame_index, index, buf, 16,
+                                                 size)) {
+              return false;
+            }
+            break;
+          default:
+            return false;
+          }
+
+          if (size == sizeof(uint32_t)) {
+            uint32_t value;
+            memcpy(&value, buf, size);
+            stack.push_back(Scalar(value));
+          } else if (size == sizeof(uint64_t)) {
+            uint64_t value;
+            memcpy(&value, buf, size);
+            stack.push_back(Scalar(value));
+          } else
+            return false;
+        } else {
+          if (error_ptr)
+            error_ptr->SetErrorString("Invalid target architecture for "
+                                      "DW_OP_WASM_location opcode.");
+          return false;
+        }
+      } else {
+        if (error_ptr)
+          error_ptr->SetErrorString("Invalid stack frame in context for "
+                                    "DW_OP_WASM_location opcode.");
+        return false;
+      }
     } break;
 
     // OPCODE: DW_OP_addrx (DW_OP_GNU_addr_index is the legacy name.)

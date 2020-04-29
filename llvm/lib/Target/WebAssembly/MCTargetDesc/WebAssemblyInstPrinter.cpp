@@ -285,6 +285,11 @@ void WebAssemblyInstPrinter::printWebAssemblyP2AlignOperand(const MCInst *MI,
 void WebAssemblyInstPrinter::printWebAssemblySignatureOperand(const MCInst *MI,
                                                               unsigned OpNo,
                                                               raw_ostream &O) {
+  if (MI->getNumOperands() <= OpNo) {
+    O << "unknown_type";
+    return;
+  }
+
   const MCOperand &Op = MI->getOperand(OpNo);
   if (Op.isImm()) {
     auto Imm = static_cast<unsigned>(Op.getImm());

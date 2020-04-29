@@ -23,6 +23,11 @@
 class StringExtractor;
 
 namespace lldb_private {
+
+namespace wasm {
+class WasmProcessGDBRemote;
+}
+
 namespace process_gdb_remote {
 
 class ThreadGDBRemote;
@@ -75,6 +80,7 @@ public:
 
 protected:
   friend class ThreadGDBRemote;
+  friend class wasm::WasmProcessGDBRemote;
 
   bool ReadRegisterBytes(const RegisterInfo *reg_info, DataExtractor &data);
 

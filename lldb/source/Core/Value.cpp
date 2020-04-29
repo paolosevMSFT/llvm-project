@@ -30,6 +30,8 @@
 #include "lldb/lldb-forward.h"
 #include "lldb/lldb-types.h"
 
+#include "Plugins/Process/wasm/ProcessWasm.h"
+
 #include <memory>
 #include <string>
 
@@ -563,8 +565,27 @@ Status Value::GetValueAsData(ExecutionContext *exe_ctx, DataExtractor &data,
         Process *process = exe_ctx->GetProcessPtr();
 
         if (process) {
-          const size_t bytes_read =
-              process->ReadMemory(address, dst, byte_size, error);
+          StackFrame *frame = exe_ctx->GetFramePtr();
+          size_t bytes_read = 0;
+
+          bool isWasm =
+              frame
+                  ? (frame->CalculateTarget()->GetArchitecture().GetMachine() ==
+                     llvm::Triple::wasm32)
+                  : false;
+          if (isWasm) {
+            int frame_index = frame->GetConcreteFrameIndex();
+            wasm::IWasmProcess *wasm_process =
+                static_cast<wasm::WasmProcessGDBRemote *>(
+                    frame->CalculateProcess().get());
+            if (wasm_process->WasmReadMemory(frame_index, address, dst,
+                                         byte_size)) {
+              bytes_read = byte_size;
+            }
+          } else {
+            bytes_read = process->ReadMemory(address, dst, byte_size, error);
+          }
+
           if (bytes_read != byte_size)
             error.SetErrorStringWithFormat(
                 "read memory from 0x%" PRIx64 " failed (%u of %u bytes read)",
