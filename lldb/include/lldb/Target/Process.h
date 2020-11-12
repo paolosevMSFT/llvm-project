@@ -1463,7 +1463,7 @@ public:
   ///     vm_addr, \a buf, and \a size updated appropriately. Zero is
   ///     returned in the case of an error.
   virtual size_t ReadMemory(lldb::addr_t vm_addr, void *buf, size_t size,
-                            Status &error);
+                            Status &error, ExecutionContext *exe_ctx = nullptr);
 
   /// Read of memory from a process.
   ///
@@ -2546,6 +2546,8 @@ void PruneThreadPlans();
   bool CallVoidArgVoidPtrReturn(const Address *address,
                                 lldb::addr_t &returned_func,
                                 bool trap_exceptions = false);
+
+  //virtual void FixLoadAddress(Module *module, lldb::addr_t &addr) {}
 
 protected:
   void SetState(lldb::EventSP &event_sp);
